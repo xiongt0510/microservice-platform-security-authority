@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.anjuxing.platform.authority.mapper.SysAclModuleMapper">
+    <resultMap id="aclModuleMap" type="com.anjuxing.platform.authority.model.SysAclModule">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="name" property="name" jdbcType="INTEGER"></result>
+        <result column="desc" property="desc" jdbcType="VARCHAR"></result>
+        <result column="level" property="level" jdbcType="VARCHAR"></result>
+        <result column="seq" property="seq" jdbcType="INTEGER"></result>
+        <result column="parent_id" property="parentId" jdbcType="INTEGER"></result>
+        <result column="remark" property="remark" jdbcType="VARCHAR"></result>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"></result>
+        <result column="creator" property="creator" jdbcType="VARCHAR"></result>
+
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, name, parent_id, level, seq, status, remark, operator, operate_time, operate_ip
+    </sql>
+
+    <select id="findAll" resultMap="aclModuleMap">
+        SELECT
+            *
+          FROM sys_acl_module where status = 1
+    </select>
+
+
+    <select id="findById" resultMap="aclModuleMap">
+        SELECT *  FROM sys_acl_module  WHERE id= #{id}
+    </select>
+
+    <insert id="save" parameterType="com.anjuxing.platform.authority.model.SysAclModule" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO sys_acl_module
+        (
+        `name`,
+        `desc`,
+        `level`,
+        seq,
+        parent_id,
+        remark,
+        create_time,
+        creator
+
+        ) VALUE (
+        #{name},
+        #{desc},
+        #{level},
+        #{seq},
+        #{parentId},
+        #{remark},
+        now(),
+        #{creator}
+        )
+
+
+
+    </insert>
+
+    <update id="update" parameterType="com.anjuxing.platform.authority.model.SysAclModule">
+        UPDATE
+        sys_acl_module d
+        <set>
+            <if test="name != null">d.name = #{name,jdbcType=VARCHAR}, </if>
+            <if test="desc != null">desc = #{desc,jdbcType=VARCHAR}, </if>
+            <if test="level != null">level = #{level,jdbcType=VARCHAR}, </if>
+            <if test="seq != null">seq = #{seq,jdbcType=INTEGER}, </if>
+            <if test="parentId != null">parent_id = #{parentId,jdbcType=INTEGER}, </if>
+            <if test="remark != null">remark = #{remark,jdbcType=VARCHAR}, </if>
+
+        </set>
+        WHERE
+        id = #{id,jdbcType=INTEGER}
+
+    </update>
+
+    <!-- 逻辑删除数据 -->
+    <update id="cancel" parameterType="java.lang.Integer">
+        update sys_acl_module
+        SET
+        status = 0
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <!-- 物理删除数据 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from sys_acl_module where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <select id="findChildAclModuleListByLevel" resultMap="aclModuleMap">
+        select
+        <include refid="Base_Column_List" />
+        from sys_acl_module
+        WHERE level like #{level}
+    </select>
+
+    <update id="batchUpdateLevel" parameterType="map">
+        <foreach collection="sysAclModuleList" item="sysAclModule" separator=";">
+            UPDATE sys_acl_module
+            SET level = #{sysAclModule.level}
+            WHERE id = #{sysAclModule.id}
+        </foreach>
+    </update>
+
+    <select id="countByNameAndParentId" parameterType="map" resultType="int">
+        SELECT count(1)
+        FROM sys_acl_module
+        WHERE name = #{name}
+        <if test="parentId != null">
+            AND parent_id = #{parentId}
+        </if>
+        <if test="id != null">
+            AND id != #{id}
+        </if>
+    </select>
+
+
+    <select id="countByParentId" parameterType="int" resultType="int">
+        SELECT count(1)
+        FROM sys_acl_module
+        WHERE parent_id = #{aclModuleId}
+    </select>
+
+
+
+
+
+</mapper>

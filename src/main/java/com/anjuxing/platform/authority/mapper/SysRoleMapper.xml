@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.anjuxing.platform.authority.mapper.SysRoleMapper">
+    <resultMap id="roleMap" type="com.anjuxing.platform.authority.model.SysRole">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="name" property="name" jdbcType="VARCHAR"></result>
+        <result column="type" property="type" jdbcType="INTEGER"></result>
+        <result column="desc" property="desc" jdbcType="VARCHAR"></result>
+        <result column="remark" property="remark" jdbcType="VARCHAR"></result>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"></result>
+        <result column="creator" property="creator" jdbcType="VARCHAR"></result>
+
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, name, type, status, remark, operator, operate_time, operate_ip
+    </sql>
+    <select id="findAll" resultMap="roleMap">
+        SELECT
+            * FROM sys_role WHERE status = 1
+    </select>
+
+    <select id="findByUserId" resultMap="roleMap">
+        SELECT
+        *
+        FROM sys_role r
+        INNER JOIN sys_user_role ur ON r.id = ur.role_id
+        WHERE r.status = 1 AND ur.user_id = #{userId}
+    </select>
+
+
+    <!-- 通过菜单Id获取角色信息 -->
+    <select id="findById" resultMap="roleMap">
+        SELECT *  FROM sys_role r WHERE r.id= #{id}
+    </select>
+
+    <insert id="save" parameterType="com.anjuxing.platform.authority.model.SysRole" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO sys_role
+        (
+        `name`,
+        `type`,
+        `desc`,
+        remark,
+        create_time,
+        creator
+
+        ) VALUE (
+        #{name},
+        #{type},
+        #{desc},
+        #{remark},
+        now(),
+        #{creator}
+        )
+
+
+
+    </insert>
+
+    <update id="update" parameterType="com.anjuxing.platform.authority.model.SysRole">
+        UPDATE
+        sys_role r
+        <set>
+            <if test="name != null">r.name = #{name,jdbcType=VARCHAR}, </if>
+            <if test="type != null">r.type = #{type,jdbcType=VARCHAR}, </if>
+            <if test="desc != null">r.desc = #{desc,jdbcType=VARCHAR}, </if>
+            <if test="remark != null">r.remark = #{remark,jdbcType=VARCHAR}, </if>
+
+        </set>
+        WHERE
+        id = #{id,jdbcType=INTEGER}
+
+    </update>
+
+    <!-- 逻辑删除数据 -->
+    <update id="cancel" parameterType="java.lang.Integer">
+        update sys_role
+        SET
+        status = 0
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <!-- 物理删除数据 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from sys_role where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+
+    <select id="countByName" parameterType="map" resultType="int">
+        SELECT count(1)
+        FROM sys_role
+        WHERE name = #{name}
+        <if test="id != null">
+            AND id != #{id}
+        </if>
+    </select>
+
+    <select id="findByIdList" parameterType="map" resultMap="roleMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM sys_role
+        WHERE id IN
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+
+
+
+
+</mapper>

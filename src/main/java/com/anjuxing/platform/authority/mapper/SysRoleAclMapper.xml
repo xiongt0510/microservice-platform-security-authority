@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.anjuxing.platform.authority.mapper.SysRoleAclMapper">
+    <resultMap id="roleAclMap" type="com.anjuxing.platform.authority.model.SysRoleAcl">
+        <id column="id" property="id" jdbcType="INTEGER"></id>
+        <result column="acl_id" property="aclId" jdbcType="INTEGER"></result>
+        <result column="role_id" property="roleId" jdbcType="INTEGER"></result>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"></result>
+        <result column="creator" property="creator" jdbcType="VARCHAR"></result>
+    </resultMap>
+
+
+    <insert id="saveRoleAcl" >
+
+        <if test="roleAcls != null">
+            DELETE FROM sys_role_acl WHERE role_id = #{roleId};
+
+            INSERT INTO sys_role_acl (
+              acl_id,
+              role_id
+            ) VALUES
+             <foreach collection="roleAcls" item="roleAcl" index="index" separator=",">
+                 (
+                    #{roleAcl.aclId},
+                    #{roleAcl.roleId}
+                 )
+
+             </foreach>
+        </if>
+
+    </insert>
+
+    <delete id="deleteByRoleId" parameterType="int">
+        DELETE FROM sys_role_acl
+        WHERE role_id = #{roleId}
+    </delete>
+
+    <insert id="batchSave" parameterType="map">
+        insert into sys_role_acl (role_id, acl_id, creator, create_time)
+        values
+        <foreach collection="roleAclList" item="roleAcl" separator=",">
+            (#{roleAcl.roleId}, #{roleAcl.aclId}, #{roleAcl.creator}, #{roleAcl.createTime})
+        </foreach>
+    </insert>
+
+    <select id="findRoleIdsByAclId" parameterType="int" resultType="int">
+        SELECT role_id
+        FROM sys_role_acl
+        WHERE acl_id = #{aclId}
+    </select>
+
+    <select id="findAclIdsByRoleIds" parameterType="map" resultType="int">
+        SELECT acl_id
+        FROM sys_role_acl
+        WHERE role_id in
+        <foreach collection="roleIdList" item="roleId" open="(" close=")" separator=",">
+            #{roleId}
+        </foreach>
+    </select>
+
+
+
+
+
+
+
+</mapper>

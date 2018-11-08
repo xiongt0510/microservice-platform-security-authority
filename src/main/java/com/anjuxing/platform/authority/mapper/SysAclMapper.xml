@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.anjuxing.platform.authority.mapper.SysAclMapper">
+    <resultMap id="aclMap" type="com.anjuxing.platform.authority.model.SysAcl">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <id column="code" property="code" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR"></result>
+        <result column="desc" property="desc" jdbcType="VARCHAR"></result>
+        <result column="acl_module_id" property="aclModuleId" jdbcType="INTEGER"></result>
+        <result column="url" property="url" jdbcType="VARCHAR"></result>
+        <result column="type" property="type" jdbcType="INTEGER"></result>
+        <result column="seq" property="seq" jdbcType="INTEGER"></result>
+        <result column="remark" property="remark" jdbcType="VARCHAR"></result>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"></result>
+        <result column="creator" property="creator" jdbcType="INTEGER"></result>
+
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, code, name, acl_module_id, url, type, status, seq, remark, creator, create_time
+    </sql>
+
+    <!-- 查询所有操作 -->
+    <select id="findAll" resultMap="aclMap">
+        SELECT * FROM
+        sys_acl a
+        WHERE a.status = 1
+    </select>
+
+
+    <!-- 查询根据Id -->
+    <select id="findById" resultMap="aclMap">
+        SELECT *  FROM sys_acl a WHERE a.status = 1 and a.id = #{id}
+    </select>
+
+
+    <!-- 查询根据roleId -->
+    <select id="findByRoleId" resultMap="aclMap">
+        SELECT PERM.*,OPER.ID AS PID ,OPER.OPER_NAME,OPER.OPER_CODE
+         FROM sys_acl a
+         INNER JOIN sys_role_acl ra ON a.id = ra.acl_id
+         WHERE ra.role_id = #{roleId}
+    </select>
+
+    <insert id="save" parameterType="com.anjuxing.platform.authority.model.SysAcl" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO sys_acl
+        (
+        code,
+        `name`,
+        `desc`,
+        acl_module_id,
+        url,
+        `type`,
+        status,
+        seq,
+        remark,
+        create_time,
+        creator
+
+        ) VALUE (
+        #{code},
+        #{name},
+        #{desc},
+        #{aclModuleId},
+        #{url},
+        #{type},
+        1,
+        #{seq},
+        #{remark},
+        now(),
+        #{creator}
+        )
+
+
+
+    </insert>
+
+    <update id="update" parameterType="com.anjuxing.platform.authority.model.SysAcl">
+        UPDATE
+        sys_acl a
+        <set>
+            <if test="code != null">a.code = #{code,jdbcType=VARCHAR}, </if>
+            <if test="name != null">a.name = #{name,jdbcType=VARCHAR}, </if>
+            <if test="desc != null">a.desc = #{desc,jdbcType=INTEGER}, </if>
+            <if test="aclModuleId != null">a.acl_module_id = #{aclModuleId,jdbcType=INTEGER}, </if>
+            <if test="url != null">a.url = #{url,jdbcType=INTEGER}, </if>
+            <if test="type != null">a.type = #{type,jdbcType=INTEGER}, </if>
+            <if test="seq != null">a.seq = #{seq,jdbcType=INTEGER}, </if>
+            <if test="remark != null">a.remark = #{remark,jdbcType=INTEGER}, </if>
+
+        </set>
+        WHERE
+        id = #{id,jdbcType=INTEGER}
+
+    </update>
+
+    <!-- 逻辑删除数据 -->
+    <update id="cancel" parameterType="java.lang.Integer">
+        update sys_acl
+        SET
+        status = 0
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <!-- 物理删除数据 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from sys_acl where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+
+    <select id="countByNameAndAclModuleId" parameterType="map" resultType="int">
+        SELECT count(1)
+        FROM sys_acl
+        WHERE acl_module_id = #{aclModuleId}
+        AND name = #{name}
+        <if test="id != null">
+            AND id != #{id}
+        </if>
+     </select>
+
+    <select id="countByAclModuleId" parameterType="map" resultType="int">
+        SELECT count(1)
+        FROM sys_acl
+        WHERE acl_module_id = #{aclModuleId}
+    </select>
+
+
+    <select id="findByIds" parameterType="map" resultMap="aclMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM sys_acl
+        WHERE id IN
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findByUrl" parameterType="string" resultMap="aclMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM sys_acl
+        WHERE url = #{url} <!-- url is not null and url != '' and  #{url} REGEXP url-->
+    </select>
+
+    <select id="findByAclModuleId" parameterType="map" resultMap="aclMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM sys_acl
+        WHERE acl_module_id = #{aclModuleId}
+        ORDER BY seq ASC, name ASC
+    </select>
+
+
+
+
+
+
+
+
+</mapper>
